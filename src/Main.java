@@ -14,6 +14,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public static int gameState = -1;
     public static long timer;
     public static int frames = 0;
+    public static double physicsFreq = 1.0/240.0;
     public Main() {
         this.setFocusable(true);
         addKeyListener(this);
@@ -40,7 +41,6 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             gameState+=1;
         }
         drawBalls(g);
-        checkCol();
     }
     public void init(){
         balls.add(new Ball(1,600,360, true));
@@ -51,13 +51,16 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public void temp(){
         balls.get(0).setVelocity(new Vectorio(0,Math.PI/2,true));
         balls.get(1).setVelocity(new Vectorio(0, Math.PI, true));
-        balls.get(3).setVelocity(new Vectorio(-15,0));//Max speed 25 pixels/second
+        balls.get(3).setVelocity(new Vectorio(-3000,0));//Max speed 3000 pixels/second
     }
     public void drawBalls(Graphics g){
         for (int i = 0; i < balls.size(); i++){
-            balls.get(i).move();
             g.drawOval((int) balls.get(i).getX(), (int) balls.get(i).getY(), 20,20);
         }
+    }
+    public void move(){
+        for (int i = 0; i < balls.size(); i++)
+            balls.get(i).move();
     }
     public void checkCol(){
         for (int i = 0; i < balls.size(); i++){
@@ -73,6 +76,10 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             c.iterateFrame();//Keep collision in the hashset so slow moving balls don't get counted twice
             if (c.getFrames() == 4) iter.remove();
         }
+    }
+    public void physics (){
+        move();
+        checkCol();
     }
     @Override
     public void keyTyped(KeyEvent e) {
@@ -116,18 +123,29 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
 
     @Override
     public void run() {
+        long previous = System.nanoTime();
+        double accumulator = 0.0;
+        double lastFrameTime;
+        long current;
+        long timer = System.currentTimeMillis();
+        int counter = 0;
         while (true) {
-            try {
-                Thread.sleep(12);
-            } catch (Exception e) {
+            current = System.nanoTime();
+            lastFrameTime = (current - previous)/1000000000.0;//divide by 1 billion to convert to seconds
+            previous = current;
+            lastFrameTime = Math.min(lastFrameTime, 0.25);//"spiral of death"
+            accumulator += lastFrameTime;
+            while (accumulator >= physicsFreq){//Run physics as many times as necessary given how much real time has elapsed since the last frame
+                physics();
+                counter++;
+                accumulator -= physicsFreq;
             }
+            Thread.yield();//This entire process does not involve any waiting. Thread.sleep is inaccurate <15 ms, so this is the best I can do
             repaint();
-            ;
-            frames++;
-            if (frames == 83){
-                System.out.println(System.currentTimeMillis() - timer);
-                frames = 0;
+            if (System.currentTimeMillis() - timer > 1000){
                 timer = System.currentTimeMillis();
+                System.out.println("One second! Physics ran: " + counter + " times.");
+                counter = 0;
             }
         }
     }

@@ -9,7 +9,7 @@ public class Ball {
     private Vectorio velocity;
     private static final int radius = 10;
     private static final double friction = -0.015;
-    private static final double frictionS = 0.99;
+    private static final double frictionS = 0.9975;
 
     public static HashSet<Collision> collisions = new HashSet<Collision>();
 
@@ -30,10 +30,10 @@ public class Ball {
         if (distance <= radius*2.03 && !this.equals(b)){
             if (Vectorio.dotProduct(new Vectorio(b.x - x, b.y - y), Vectorio.subtraction(b.velocity, velocity)) < 0.0) {
                 while (distance < radius * 2) {
-                    x -= velocity.getX() * 0.05;
-                    y -= velocity.getY() * 0.05;
-                    b.x -= b.velocity.getX() * 0.05;
-                    b.y -= b.velocity.getY() * 0.05;
+                    x -= velocity.getX() * 0.05 * Main.physicsFreq;
+                    y -= velocity.getY() * 0.05 * Main.physicsFreq;
+                    b.x -= b.velocity.getX() * 0.05 * Main.physicsFreq;
+                    b.y -= b.velocity.getY() * 0.05 * Main.physicsFreq;
                     distance = Math.sqrt(Math.pow(x - b.x, 2) + Math.pow(y - b.y, 2));
                 }
                 collisions.add(new Collision(this, b));
@@ -56,8 +56,8 @@ public class Ball {
         velocity = v;
     }
     public void move(){
-        x += velocity.getX();
-        y += velocity.getY();
+        x += velocity.getX() * Main.physicsFreq;
+        y += velocity.getY() * Main.physicsFreq;
         /*
         if (velocity.getMagnitude() >= friction*(-1))
             velocity.changeMag(friction);
@@ -66,6 +66,6 @@ public class Ball {
 
          */
         velocity.scale(frictionS);//Approximate friction with exponential decay
-        if (velocity.getMagnitude() < 0.1) velocity.setMagnitude(0.0);//Dead stop since exponential decay will never reach 0
+        if (velocity.getMagnitude() < 5) velocity.setMagnitude(0.0);//Dead stop since exponential decay will never reach 0
     }
 }

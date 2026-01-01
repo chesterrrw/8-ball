@@ -7,7 +7,6 @@ import java.io.*;
 import java.awt.*;
 import javax.swing.*;
 
-//TODO: Decouple physics from graphics
 public class Main extends JPanel implements MouseListener, KeyListener, Runnable {
     public static JFrame frame;
     public static ArrayList<Ball> balls = new ArrayList<Ball>();
@@ -51,7 +50,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public void temp(){
         balls.get(0).setVelocity(new Vectorio(0,Math.PI/2,true));
         balls.get(1).setVelocity(new Vectorio(0, Math.PI, true));
-        balls.get(3).setVelocity(new Vectorio(-3000,0));//Max speed 3000 pixels/second
+        balls.get(3).setVelocity(new Vectorio(-1500,0));//Max speed 3000 pixels/second
     }
     public void drawBalls(Graphics g){
         for (int i = 0; i < balls.size(); i++){

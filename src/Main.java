@@ -25,6 +25,8 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         timer = System.currentTimeMillis();
     }
     public static void main(String[] args) {
+        //Line l = new Line (1, 4, 4,2);
+        //System.out.println(l.pointDistance(7,5));
         JFrame frame = new JFrame("8 Ball");
         Main panel = new Main();
         frame.add(panel);
@@ -128,24 +130,38 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         long current;
         long timer = System.currentTimeMillis();
         int counter = 0;
+        boolean physicsRan;
         while (true) {
+            physicsRan = false;
             current = System.nanoTime();
             lastFrameTime = (current - previous)/1000000000.0;//divide by 1 billion to convert to seconds
             previous = current;
-            lastFrameTime = Math.min(lastFrameTime, 0.25);//"spiral of death"
+            lastFrameTime = Math.min(lastFrameTime, 0.25);//"spiral of death" prevention
             accumulator += lastFrameTime;
             while (accumulator >= physicsFreq){//Run physics as many times as necessary given how much real time has elapsed since the last frame
                 physics();
-                counter++;
+                //counter++;
                 accumulator -= physicsFreq;
+                physicsRan = true;
             }
             Thread.yield();//This entire process does not involve any waiting. Thread.sleep is inaccurate <15 ms, so this is the best I can do
-            repaint();
+            if (physicsRan){
+                repaint();
+                counter++;
+            }
+            if (System.currentTimeMillis() - timer > 1000) {
+                timer = System.currentTimeMillis();
+                System.out.println("One second! Graphics ran: " + counter + " times.");
+                counter = 0;
+            }
+            /*
             if (System.currentTimeMillis() - timer > 1000){
                 timer = System.currentTimeMillis();
                 System.out.println("One second! Physics ran: " + counter + " times.");
                 counter = 0;
             }
+
+             */
         }
     }
 }

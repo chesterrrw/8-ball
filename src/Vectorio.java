@@ -43,6 +43,9 @@ public class Vectorio {//Cannot be named "Vector" since a Vector class already e
     public double getY() {
         return y;
     }
+    public double getDirection(){
+        return direction;
+    }
     public double getMagnitude(){
         return magnitude;
     }

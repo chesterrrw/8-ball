@@ -29,8 +29,8 @@ public class Line {
     }
     public boolean collision (Ball b){
         //if (pointDistance (b.getX(), b.getY()) > pointDistance(b.getX() + b.getVelocity().getX()*0.01*Main.physicsFreq, b.getY() + b.getVelocity().getY()*0.01*Main.physicsFreq)) return false;
-        if (Math.abs(b.lastCollisionX - b.getX()) < 14 && Math.abs(b.lastCollisionY - b.getY()) < 14) return false;
-        if (pointDistance (b.getX(), b.getY()) < 14){
+        if (Math.sqrt(Math.pow((b.lastCollisionX - b.getX()), 2) + Math.pow((b.lastCollisionY - b.getY()), 2)) < 14) return true;
+        if (pointDistance (b.getX(), b.getY()) < 16){
             while (pointDistance(b.getX(), b.getY()) < 14){
                 b.changeX(b.getVelocity().getX() * -0.1 * Main.physicsFreq);
                 b.changeY(b.getVelocity().getY() * -0.1 * Main.physicsFreq);

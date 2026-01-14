@@ -46,6 +46,9 @@ public class Vectorio {//Cannot be named "Vector" since a Vector class already e
     public double getDirection(){
         return direction;
     }
+    public void setDirection(double direction){
+        this.direction = direction;
+    }
     public double getMagnitude(){
         return magnitude;
     }

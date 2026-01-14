@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Ball {
+public class Ball implements Comparable <Ball>{
 
     private int ID;
     private double x;
@@ -78,5 +78,12 @@ public class Ball {
          */
         velocity.scale(frictionS);//Approximate friction with exponential decay
         if (velocity.getMagnitude() < 5) velocity.setMagnitude(0.0);//Dead stop since exponential decay will never reach 0
+    }
+    //sort by distance to the cue ball
+    @Override
+    public int compareTo(Ball b) {
+        double thisDistance = Math.sqrt(Math.pow(x - Main.cueBall.x, 2) + Math.pow(y - Main.cueBall.y, 2));
+        double thatDistance = Math.sqrt(Math.pow(b.x - Main.cueBall.x, 2) + Math.pow(b.y - Main.cueBall.y, 2));
+        return (int) (thisDistance - thatDistance);
     }
 }

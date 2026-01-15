@@ -19,9 +19,9 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public static int startPull;
     public static long timer;
     public static int frames = 0;
-    public static double physicsFreq = 1.0/240.0;
-    public static int offsetX = 50;
-    public static int offsetY = 75;
+    public static double physicsFreq = 1.0/300.0;
+    public static int offsetX = 75;
+    public static int offsetY = 25;
     public static BufferedImage table;
     public static BufferedImage cueImg;
     public static BufferedImage bgcolorImg;
@@ -70,14 +70,22 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         }
     }
     public void init(){
-        cueBall = new Ball (0, 1000,500, 0);
-        balls.add(new Ball(1,600,374, 1));
-        balls.add(new Ball(2,600,336, 1));
-        balls.add(new Ball(3, 618, 350, 1));
-        balls.add(new Ball(4, 1000,350,1));
-        balls.add(new Ball(5, 582,350,1));
-        balls.add(new Ball(6, 600,300,1));
-        balls.add(new Ball(7, 200,200,1));
+        cueBall = new Ball (0, 942,359, 0);
+        balls.add(new Ball(1,356,359, 1));
+        balls.add(new Ball(2,332,373, 1));
+        balls.add(new Ball(3, 332, 345, 1));
+        balls.add(new Ball(4, 308,359,2));
+        balls.add(new Ball(5, 308,387,1));
+        balls.add(new Ball(6, 308,331,1));
+        balls.add(new Ball(7, 284,373,1));
+        balls.add(new Ball(8, 284,345,1));
+        balls.add(new Ball(9, 284,317,1));
+        balls.add(new Ball(10, 284,401,1));
+        balls.add(new Ball(11, 262,359,1));
+        balls.add(new Ball(12, 262,387,1));
+        balls.add(new Ball(13, 262,331,1));
+        balls.add(new Ball(14, 262,415,1));
+        balls.add(new Ball(15, 262,303,1));
         balls.add(cueBall);
         cue = new Cue();
         //lines.add(new Line(100, 600,1200,600));
@@ -209,8 +217,8 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     }
     public void physics (){
         if (shotState == 3){
-            cueBall.setVelocity(new Vectorio(3000*cue.getPowerPercent(), cue.getAngle() - Math.PI, true));
-            System.out.println(3000*cue.getPowerPercent());
+            cueBall.setVelocity(new Vectorio(2400*cue.getPowerPercent(), cue.getAngle() - Math.PI, true));
+            //System.out.println(3000*cue.getPowerPercent());
             shotState = 0;
             cue.setShow(false);
         }
@@ -224,13 +232,14 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
                     ghostCueBall.setVelocity(new Vectorio(1, cue.getAngle() - Math.PI, true));
                     ghostObjectBall = new Ball(-1, balls.get(i).getX(), balls.get(i).getY(), -1);
                     int counter = 0;
-                    while (!ghostCueBall.checkCollision(balls.get(i)) && counter < 150) {//March ball forward until collides with ball
-                        ghostCueBall.changeX(cue.getDirection().getX() * -12.5);
-                        ghostCueBall.changeY(cue.getDirection().getY() * -12.5);
+                    while (!ghostCueBall.checkCollision(balls.get(i)) && counter < 300) {//March ball forward until collides with ball
+                        ghostCueBall.changeX(cue.getDirection().getX() * -5.5);
+                        ghostCueBall.changeY(cue.getDirection().getY() * -5.5);
                         counter++;
                     }
-                    if (counter > 149) {
-                        break;
+                    if (counter > 295){
+                        ballCol = false;
+                        continue;
                     }
                     initPath = new Line((int) cueBall.getX(), (int) cueBall.getY(), (int) ghostCueBall.getX(), (int) ghostCueBall.getY());
                     Ball.collisions.clear();
@@ -248,6 +257,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             if (!ballCol) {
                 cuePath = null;
                 objectPath = null;
+                //while(!)
                 initPath = new Line((int) cueBall.getX(), (int) cueBall.getY(),
                         (int) (cueBall.getX() + cue.getDirection().getX() * -500), (int) (cueBall.getY() + cue.getDirection().getY() * -500));
             }

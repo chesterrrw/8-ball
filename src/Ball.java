@@ -9,7 +9,7 @@ public class Ball implements Comparable <Ball>{
     private Vectorio velocity;
     private static final int radius = 14;
     private static final double friction = -0.015;
-    private static final double frictionS = 0.9975;
+    private static final double frictionS = 0.9985;
 
     public double lastCollisionX;
     public double lastCollisionY;
@@ -22,6 +22,8 @@ public class Ball implements Comparable <Ball>{
         this.y = y;
         this.colour = colour;
         velocity = new Vectorio(0, 0, true);
+        lastCollisionX = 10000;
+        lastCollisionY = 10000;
     }
     public boolean equals(Object o){
         Ball b = (Ball) o;

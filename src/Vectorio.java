@@ -48,6 +48,8 @@ public class Vectorio {//Cannot be named "Vector" since a Vector class already e
     }
     public void setDirection(double direction){
         this.direction = direction;
+        x = magnitude * Math.cos(direction);
+        y = magnitude * Math.sin(direction);
     }
     public double getMagnitude(){
         return magnitude;

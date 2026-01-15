@@ -16,22 +16,22 @@ public class Line {
         directionVector = new UnitVector((x2 - x1), (y2 - y1));
         normal = new UnitVector(directionVector.getY(), -directionVector.getX());
     }
-    public double pointDistance (double x, double y){
+    public double pointDistance (double x, double y, boolean checkEnds){
         //If the point is beyond the ends of the line, return big number so collision isn't triggered
         //Centre of circle not being within the ends of the line doesn't mean the closest point on the circumference isn't
         //Add and subtract (since there are two possible normal vectors) the radius of the ball in the normal direction to get position of the closest point
-        if ((x + normal.getX() * 14 < Math.min(x1, x2) && x - normal.getX() * 14 < Math.min(x1, x2)) ||
+        if (checkEnds && ((x + normal.getX() * 14 < Math.min(x1, x2) && x - normal.getX() * 14 < Math.min(x1, x2)) ||
                 (x + normal.getX() * 14 > Math.max(x1, x2) && x - normal.getX() * 14 > Math.max(x1, x2)) ||
                 (y + normal.getY() * 14 < Math.min(y1, y2) && y - normal.getY() * 14 < Math.min(y1, y2)) ||
-                (y + normal.getY() * 14 > Math.max(y1, y2) && y - normal.getY() * 14 > Math.max(y1, y2)))
+                (y + normal.getY() * 14 > Math.max(y1, y2) && y - normal.getY() * 14 > Math.max(y1, y2))))
                 return 100;
         return Math.abs(Vectorio.dotProduct(new Vectorio(x - x1, y - y1), normal));//Since normal is already a unit vector
     }
     public boolean collision (Ball b){
         //if (pointDistance (b.getX(), b.getY()) > pointDistance(b.getX() + b.getVelocity().getX()*0.01*Main.physicsFreq, b.getY() + b.getVelocity().getY()*0.01*Main.physicsFreq)) return false;
         if (Math.sqrt(Math.pow((b.lastCollisionX - b.getX()), 2) + Math.pow((b.lastCollisionY - b.getY()), 2)) < 14) return true;
-        if (pointDistance (b.getX(), b.getY()) < 16){
-            while (pointDistance(b.getX(), b.getY()) < 14){
+        if (pointDistance (b.getX(), b.getY(), true) < 16){
+            while (pointDistance(b.getX(), b.getY(), true) < 14){
                 b.changeX(b.getVelocity().getX() * -0.1 * Main.physicsFreq);
                 b.changeY(b.getVelocity().getY() * -0.1 * Main.physicsFreq);
                 normal = new UnitVector(directionVector.getY(), -directionVector.getX());

@@ -27,23 +27,26 @@ public class Ball implements Comparable <Ball>{
         Ball b = (Ball) o;
         return (b.getID() == ID);
     }
-    public void checkCollision(Ball b){
-        double distance = Math.sqrt(Math.pow(x - b.x, 2) + Math.pow(y - b.y, 2));
+    public boolean checkCollision(Ball b){
+        if (b.ID == this.ID) return false;
+        double distanceSqrd = (Math.pow(x - b.x, 2) + Math.pow(y - b.y, 2));
         //Within range and not the same ball
-        if (distance <= radius*2.03 && !this.equals(b)){
+        if (distanceSqrd <= Math.pow((radius*2.03), 2) && !this.equals(b)){
             //Check collision course
             if (Vectorio.dotProduct(new Vectorio(b.x - x, b.y - y), Vectorio.subtraction(b.velocity, velocity)) < 0.0) {
                 //If balls glitching together, ie distance between centers is less than diameter, "walk" backwards slowly until the balls are no longer touching
-                while (distance < radius * 2) {
+                while (distanceSqrd < Math.pow((radius*2), 2)) {
                     x -= velocity.getX() * 0.05 * Main.physicsFreq;
                     y -= velocity.getY() * 0.05 * Main.physicsFreq;
                     b.x -= b.velocity.getX() * 0.05 * Main.physicsFreq;
                     b.y -= b.velocity.getY() * 0.05 * Main.physicsFreq;
-                    distance = Math.sqrt(Math.pow(x - b.x, 2) + Math.pow(y - b.y, 2));
+                    distanceSqrd = Math.pow(x - b.x, 2) + Math.pow(y - b.y, 2);
                 }
                 collisions.add(new Collision(this, b));
+                return true;
             }
         }
+        return false;
     }
     public double getX(){
         return x;

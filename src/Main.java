@@ -11,9 +11,9 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public static JFrame frame;
     public static ArrayList<Ball> balls = new ArrayList<Ball>();
     public static ArrayList<Line> lines = new ArrayList<Line>();
-    public static Ball cueBall;
+    public static Ball cueBall, ghostCueBall, ghostObjectBall;
     public static Cue cue;
-    public static Line initPath;
+    public static Line initPath, cuePath, objectPath;
     public static int gameState = -1;
     public static int shotState = 0;
     public static int startPull;
@@ -135,6 +135,13 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             g.drawLine((int) l.getX1() + offsetX, (int) l.getY1() + offsetY, (int) l.getX2() + offsetX, (int) l.getY2() + offsetY);
         }
     }
+    public void drawLine(Graphics g, Line l){
+        if (l == null) return;
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(Color.WHITE);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.drawLine((int) l.getX1() + offsetX, (int) l.getY1() + offsetY, (int) l.getX2() + offsetX, (int) l.getY2() + offsetY);
+    }
     public void drawCue(Graphics g){
         if (!cue.getShow()) return;
         Graphics2D g2d = (Graphics2D) g.create();
@@ -146,6 +153,13 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             cue.striking();
         }
         g2d.drawImage(cueImg, -cueImgW / 2, -cueImgL / 2, null);
+        drawLine(g, initPath);
+        drawLine(g, cuePath);
+        drawLine(g, objectPath);
+        g.setColor(Color.WHITE);
+        if (initPath != null) {
+            g.drawOval((int) (initPath.getX2() - 14 + offsetX), (int) (initPath.getY2() - 14 + offsetY), 28, 28);
+        }
     }
     public void move(){
         boolean allStop = true;
@@ -194,16 +208,55 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         }
     }
     public void physics (){
-        move();
-        checkBallCol();
-        checkLineCol();
-        checkOB();
         if (shotState == 3){
-            cueBall.setVelocity(new Vectorio(3000*cue.getPowerPercent(), cue.getDirection(), true));
+            cueBall.setVelocity(new Vectorio(3000*cue.getPowerPercent(), cue.getAngle() - Math.PI, true));
             System.out.println(3000*cue.getPowerPercent());
             shotState = 0;
             cue.setShow(false);
         }
+        if (shotState == 1 && gameState == 0) {
+            boolean ballCol = false;
+            for (int i = 0; i < balls.size(); i++) {
+                if (balls.get(i).getID() == 0) continue;
+                if (cue.getLine().pointDistance(balls.get(i).getX(), balls.get(i).getY(), false) < 28) {
+                    ballCol = true;
+                    ghostCueBall = new Ball(0, cueBall.getX(), cueBall.getY(), -1);
+                    ghostCueBall.setVelocity(new Vectorio(1, cue.getAngle() - Math.PI, true));
+                    ghostObjectBall = new Ball(-1, balls.get(i).getX(), balls.get(i).getY(), -1);
+                    int counter = 0;
+                    while (!ghostCueBall.checkCollision(balls.get(i)) && counter < 150) {//March ball forward until collides with ball
+                        ghostCueBall.changeX(cue.getDirection().getX() * -12.5);
+                        ghostCueBall.changeY(cue.getDirection().getY() * -12.5);
+                        counter++;
+                    }
+                    if (counter > 149) {
+                        break;
+                    }
+                    initPath = new Line((int) cueBall.getX(), (int) cueBall.getY(), (int) ghostCueBall.getX(), (int) ghostCueBall.getY());
+                    Ball.collisions.clear();
+                    Collision calculator = new Collision(ghostCueBall, ghostObjectBall);
+                    calculator.handle();
+                    cuePath = new Line((int) ghostCueBall.getX(), (int) ghostCueBall.getY(),
+                            (int) (ghostCueBall.getX() + ghostCueBall.getVelocity().getX() * 100),
+                            (int) (ghostCueBall.getY() + ghostCueBall.getVelocity().getY() * 100));
+                    objectPath = new Line((int) ghostObjectBall.getX(), (int) ghostObjectBall.getY(),
+                            (int) (ghostObjectBall.getX() + ghostObjectBall.getVelocity().getX() * 100),
+                            (int) (ghostObjectBall.getY() + ghostObjectBall.getVelocity().getY() * 100));
+                    break;
+                }
+            }
+            if (!ballCol) {
+                cuePath = null;
+                objectPath = null;
+                initPath = new Line((int) cueBall.getX(), (int) cueBall.getY(),
+                        (int) (cueBall.getX() + cue.getDirection().getX() * -500), (int) (cueBall.getY() + cue.getDirection().getY() * -500));
+            }
+        }
+        if (shotState != 0) return;
+        move();
+        checkBallCol();
+        checkLineCol();
+        checkOB();
     }
     @Override
     public void keyTyped(KeyEvent e) {
@@ -229,7 +282,6 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == (MouseEvent.BUTTON3)){
             cue.calcAngle(cueBall, e.getX(), e.getY());
-
         }
         if (SwingUtilities.isLeftMouseButton(e) && shotState == 1){
             startPull = e.getY();
@@ -239,6 +291,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public void mouseDragged(MouseEvent e) {
         if (SwingUtilities.isRightMouseButton(e) && shotState == 1){
             cue.calcAngle(cueBall, e.getX(), e.getY());
+            //System.out.println("herE!");
         }
         if (SwingUtilities.isLeftMouseButton(e) && shotState == 1){
             cue.setPullBack(e.getY() - startPull);
@@ -250,7 +303,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
+    public void mouseReleased(MouseEvent e) {;
         if (SwingUtilities.isLeftMouseButton(e) && shotState == 1 && e.getY() - startPull > 10){
             shotState = 2;
         }

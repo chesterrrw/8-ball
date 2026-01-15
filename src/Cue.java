@@ -9,10 +9,13 @@ public class Cue {
         directionVector = new UnitVector(0);
         pullBack = 0;
         show = true;
+        vectorLine = new Line((int) Main.cueBall.getX(), (int) Main.cueBall.getY(),
+                (int) (Main.cueBall.getX()+directionVector.getX()*-5000),
+                (int) (Main.cueBall.getY()+directionVector.getY()*-5000));
     }
     public void calcAngle(Ball b, double x, double y){
         directionVector.setDirection(x - (b.getX() + Main.offsetX), y - (b.getY() + Main.offsetY));
-        vectorLine = new Line((int) b.getX(), (int) b.getY(), (int) (b.getX()+directionVector.getX()*5000), (int)(b.getY()+directionVector.getY()*5000));
+        vectorLine = new Line((int) b.getX(), (int) b.getY(), (int) (b.getX()+directionVector.getX()*-5000), (int)(b.getY()+directionVector.getY()*-5000));
     }
     public double getAngle(){
         return directionVector.getDirection();
@@ -29,8 +32,8 @@ public class Cue {
         pullBack -= maxPull * powerPercent * 0.05;
         if (pullBack <= 0) Main.shotState = 3;
     }
-    public double getDirection(){
-        return directionVector.getDirection() - Math.PI;
+    public UnitVector getDirection(){
+        return directionVector;
     }
     public double getPowerPercent(){
         return powerPercent;
@@ -40,5 +43,8 @@ public class Cue {
     }
     public boolean getShow(){
         return show;
+    }
+    public Line getLine(){
+        return vectorLine;
     }
 }

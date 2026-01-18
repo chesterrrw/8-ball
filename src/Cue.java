@@ -14,7 +14,12 @@ public class Cue {
                 (int) (Main.cueBall.getY()+directionVector.getY()*-5000));
     }
     public void calcAngle(Ball b, double x, double y){
-        directionVector.setDirection(x - (b.getX() + Main.offsetX), y - (b.getY() + Main.offsetY));
+        UnitVector temp = new UnitVector(x - (b.getX() + Main.offsetX), y - (b.getY() + Main.offsetY));
+        if (Vectorio.dotProduct(temp, directionVector) < 0){
+            directionVector.setDirection(temp.getX()*-1, temp.getY()*-1);
+        }
+        else
+            directionVector = temp;
         vectorLine = new Line((int) b.getX(), (int) b.getY(), (int) (b.getX()+directionVector.getX()*-5000), (int)(b.getY()+directionVector.getY()*-5000));
     }
     public double getAngle(){

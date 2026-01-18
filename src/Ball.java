@@ -7,9 +7,9 @@ public class Ball implements Comparable <Ball>{
     private double y;
     private int colour;
     private Vectorio velocity;
-    private static final int radius = 14;
+    public static final int radius = 14;
     private static final double friction = -0.015;
-    private static final double frictionS = 0.9985;
+    private static final double frictionS = 0.998;
 
     public double lastCollisionX;
     public double lastCollisionY;

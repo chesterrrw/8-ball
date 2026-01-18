@@ -29,19 +29,22 @@ public class Line {
     }
     public boolean collision (Ball b){
         //if (pointDistance (b.getX(), b.getY()) > pointDistance(b.getX() + b.getVelocity().getX()*0.01*Main.physicsFreq, b.getY() + b.getVelocity().getY()*0.01*Main.physicsFreq)) return false;
-        if (pointDistance (b.getX(), b.getY(), true) < 20){
+        if (pointDistance (b.getX(), b.getY(), true) < 18){
             if (Math.sqrt(Math.pow((b.lastCollisionX - b.getX()), 2) + Math.pow((b.lastCollisionY - b.getY()), 2)) < 14){
                 System.out.println("problem");
                 return true;
             }
-            while (pointDistance(b.getX(), b.getY(), true) > 14){
+            int counter = 0;
+            while (pointDistance(b.getX(), b.getY(), false) > Ball.radius && counter < 1000){
                 b.changeX(b.getVelocity().getX() * 0.1 * Main.physicsFreq);
                 b.changeY(b.getVelocity().getY() * 0.1 * Main.physicsFreq);
                 normal = new UnitVector(directionVector.getY(), -directionVector.getX());
                 //System.out.println(b.getX());
                 System.out.println("broke1");
+                counter++;
             }
-            while (pointDistance(b.getX(), b.getY(), true) < 13){
+            //TODO: add max forward. if not forward, go backward.
+            while (pointDistance(b.getX(), b.getY(), true) < 10){
                 b.changeX(b.getVelocity().getX() * -0.1 * Main.physicsFreq);
                 b.changeY(b.getVelocity().getY() * -0.1 * Main.physicsFreq);
                 normal = new UnitVector(directionVector.getY(), -directionVector.getX());
@@ -55,6 +58,7 @@ public class Line {
                     (x + normal.getX() * 14 > Math.max(x1, x2) && x - normal.getX() * 14 > Math.max(x1, x2)) ||
                     (y + normal.getY() * 14 < Math.min(y1, y2) && y - normal.getY() * 14 < Math.min(y1, y2)) ||
                     (y + normal.getY() * 14 > Math.max(y1, y2) && y - normal.getY() * 14 > Math.max(y1, y2))){
+                //Maybe change the normal vector to smth perpendicular to whatever the current direction is, and run the collision as normal
                 if (Math.pow(x - x1, 2) + Math.pow(y - y1, 2) < Math.pow(x - x2, 2) + Math.pow(y - y2, 2))
                     b.setVelocity(new Vectorio(b.getVelocity().getMagnitude()*elasticity, Math.atan2(y - y1, x - x1), true));
                 else

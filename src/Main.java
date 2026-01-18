@@ -1,4 +1,5 @@
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,8 +26,10 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public static BufferedImage table;
     public static BufferedImage cueImg;
     public static BufferedImage bgcolorImg;
+    public static HashMap <String, BufferedImage> ballImages = new HashMap<String, BufferedImage> ();
     public static int cueImgW;
     public static int cueImgL;
+    public static boolean breaking;
     public Main() throws IOException {
         this.setFocusable(true);
         addKeyListener(this);
@@ -42,6 +45,8 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         cueImgW = cueImg.getWidth();
         cueImgL = cueImg.getHeight();
         bgcolorImg = ImageIO.read(new File("bgcolor.png"));
+        ballImages.put("blue", ImageIO.read(new File ("blueball.png")));
+        ballImages.put("red", ImageIO.read(new File ("redball.png")));
     }
     public static void main(String[] args) throws IOException {
         //Line l = new Line (1, 4, 4,2);
@@ -61,33 +66,42 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             temp();
             gameState+=1;
         }
-        g.drawImage(table, offsetX, offsetY, null);
-        drawBalls(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.drawImage(table, offsetX, offsetY, null);
+        drawBalls(g2d);
         //drawLines(g);
-        drawCue(g);
+        drawCue(g2d);
         if (gameState == 0 && shotState == 1){
             //g.drawRect
         }
     }
     public void init(){
-        cueBall = new Ball (0, 942,359, 0);
-        balls.add(new Ball(1,356,359, 1));
-        balls.add(new Ball(2,332,373, 1));
-        balls.add(new Ball(3, 332, 345, 1));
-        balls.add(new Ball(4, 308,359,2));
-        balls.add(new Ball(5, 308,387,1));
-        balls.add(new Ball(6, 308,331,1));
-        balls.add(new Ball(7, 284,373,1));
-        balls.add(new Ball(8, 284,345,1));
-        balls.add(new Ball(9, 284,317,1));
-        balls.add(new Ball(10, 284,401,1));
-        balls.add(new Ball(11, 262,359,1));
-        balls.add(new Ball(12, 262,387,1));
-        balls.add(new Ball(13, 262,331,1));
-        balls.add(new Ball(14, 262,415,1));
-        balls.add(new Ball(15, 262,303,1));
+        ArrayList<Integer> IDs = new ArrayList<>();
+        for (int i = 1; i <= 15; i++){
+            if (i == 8) continue;
+            IDs.add(i);
+        }
+        Collections.shuffle(IDs);
+        balls.add(new Ball(IDs.get(0),356,359, 1));
+        balls.add(new Ball(IDs.get(1),332,373, 1));
+        balls.add(new Ball(IDs.get(2), 332, 345, 1));
+        balls.add(new Ball(8, 308,359,2));//8-ball
+        balls.add(new Ball(IDs.get(3), 308,387,1));
+        balls.add(new Ball(IDs.get(4), 308,331,1));
+        balls.add(new Ball(IDs.get(5), 284,373,1));
+        balls.add(new Ball(IDs.get(6), 284,345,1));
+        balls.add(new Ball(IDs.get(7), 284,317,1));
+        balls.add(new Ball(IDs.get(8), 284,401,1));
+        balls.add(new Ball(IDs.get(9), 260,359,1));
+        balls.add(new Ball(IDs.get(10), 260,387,1));
+        balls.add(new Ball(IDs.get(11), 260,331,1));
+        balls.add(new Ball(IDs.get(12), 260,415,1));
+        balls.add(new Ball(IDs.get(13), 260,303,1));
+        cueBall = new Ball (16, 942,359, 0);
         balls.add(cueBall);
         cue = new Cue();
+        breaking = true;
         //lines.add(new Line(100, 600,1200,600));
         //lines.add(new Line(100, 100,100,600));
         //lines.add(new Line(1200, 100,1200,600));
@@ -102,12 +116,12 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
          */
 
 
-        lines.add(new Line(115, 68, 80, 32));
-        lines.add(new Line(115, 68, 617, 68));
-        lines.add(new Line(617, 68, 625, 38));
-        lines.add(new Line(675, 38, 683, 68));
-        lines.add(new Line(683, 68, 1185, 68));
-        lines.add(new Line(1185, 68, 1221, 32));
+        lines.add(new Line(115, 69, 80, 32));
+        lines.add(new Line(115, 69, 617, 69));
+        lines.add(new Line(617, 69, 625, 38));
+        lines.add(new Line(675, 38, 683, 69));
+        lines.add(new Line(683, 69, 1185, 69));
+        lines.add(new Line(1185, 69, 1221, 32));
         lines.add(new Line(1231,114,1267,75));
         lines.add(new Line(1231, 114, 1231, 603));
         lines.add(new Line(1231, 603, 1268, 646));
@@ -129,11 +143,28 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         //balls.get(6).setVelocity(new Vectorio(-100,-100));
 
     }
-    public void drawBalls(Graphics g){
+    public void drawBalls(Graphics2D g2d){
         for (int i = 0; i < balls.size(); i++){
-            g.setColor(Color.RED);
-            if (balls.get(i).getID() == 0) g.setColor(Color.WHITE);
-            g.fillOval((int) balls.get(i).getX() - 14 + offsetX, (int) balls.get(i).getY() - 14 + offsetY, 28,28);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setColor(Color.RED);
+            if (balls.get(i).getID() == 16) {
+                g2d.setColor(Color.WHITE);
+                g2d.fillOval((int) balls.get(i).getX() - 14 + offsetX, (int) balls.get(i).getY() - 14 + offsetY, 28, 28);
+            }
+            else if (balls.get(i).getID() < 8) {
+                AffineTransform tx = AffineTransform.getTranslateInstance(balls.get(i).getX() - 14 + offsetX, balls.get(i).getY() - 14 + offsetY);
+                g2d.drawImage(ballImages.get("blue"), tx, null);
+            }
+            else if (balls.get(i).getID() > 8) {
+                AffineTransform tx = AffineTransform.getTranslateInstance(balls.get(i).getX() - 14 + offsetX, balls.get(i).getY() - 14 + offsetY);
+                g2d.drawImage(ballImages.get("red"), tx, null);
+            }
+            else{
+                g2d.setColor(Color.BLACK);
+                g2d.fillOval((int) balls.get(i).getX() - 14 + offsetX, (int) balls.get(i).getY() - 14 + offsetY, 28, 28);
+            }
+
+            //g2d.drawImage(ballImages.get("blue"), (int) balls.get(i).getX() - 14 + offsetX, (int) balls.get(i).getY() - 14 + offsetY, null);
         }
         //g.drawImage(cueImg, (int )balls.get(6).getX() + offsetX, (int) balls.get(6).getY() + offsetY, null);
     }
@@ -221,6 +252,10 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             //System.out.println(3000*cue.getPowerPercent());
             shotState = 0;
             cue.setShow(false);
+            if (breaking) {
+                Collections.shuffle(balls);//Shuffle the list of balls to ensure a random break every time (15! possibilities)
+                breaking = false;
+            }
         }
         if (shotState == 1 && gameState == 0) {
             boolean ballCol = false;

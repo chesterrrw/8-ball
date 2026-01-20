@@ -43,10 +43,10 @@ public class Line {
                 System.out.println("broke1");
                 counter++;
             }
-            //TODO: add max forward. if not forward, go backward.
-            while (pointDistance(b.getX(), b.getY(), true) < 10){
-                b.changeX(b.getVelocity().getX() * -0.1 * Main.physicsFreq);
-                b.changeY(b.getVelocity().getY() * -0.1 * Main.physicsFreq);
+            //Go slower if overshot, since magnitude of velocity is high
+            while (pointDistance(b.getX(), b.getY(), true) < 12){
+                b.changeX(b.getVelocity().getX() * -0.02 * Main.physicsFreq);
+                b.changeY(b.getVelocity().getY() * -0.02 * Main.physicsFreq);
                 normal = new UnitVector(directionVector.getY(), -directionVector.getX());
                 //System.out.println(b.getX());
                 System.out.println("broke2");

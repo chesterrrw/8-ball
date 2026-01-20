@@ -4,6 +4,7 @@ public class Collision {
     private Ball b1;
     private Ball b2;
     private int frames;
+    private static long lastClack = 50;
 
     public Collision(Ball b1, Ball b2){
         this.b1 = b1;
@@ -25,6 +26,12 @@ public class Collision {
         Vectorio v2 = Vectorio.subtraction(b2.getVelocity(), b1.getVelocity());
         //Normal component of v2 in Ball 1 reference frame
         Vectorio v2n = new Vectorio(normal.getX()*Vectorio.dotProduct(v2, normal), normal.getY()*Vectorio.dotProduct(v2, normal));
+        if (Main.shotState == 0){
+            if (System.currentTimeMillis() - lastClack > 50) {
+                Main.sounds.playClack(v2n.getMagnitude());
+                lastClack = System.currentTimeMillis();
+            }
+        }
         //Tangential component of v2 in Ball 1 reference frame
         Vectorio v2t = Vectorio.subtraction(v2, v2n);
         //v2n becomes v1 in Ball 1 reference frame, and v2t becomes v2, and then add to b1 velocity in stationary frame

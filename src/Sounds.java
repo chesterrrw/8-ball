@@ -11,6 +11,7 @@ public class Sounds {
     private HashMap<String, Clip> clips = new HashMap<String, Clip>();
 
     private Clip[] clackPool = new Clip[8]; // or more if needed
+    private Clip thump;
     private static int index = 0;
     public Sounds() {
             for (int i = 0; i < 8; i++) {
@@ -20,13 +21,19 @@ public class Sounds {
                     AudioInputStream audio2 = AudioSystem.getAudioInputStream(file);
                     clackPool[i].open(audio2);
                 } catch (Exception e) {
-                    System.err.println("Failed to initialize clackPool at index " + i);
+                    System.out.println("Failed to initialize clackPool at index " + i);
                     e.printStackTrace();
                 }
             }
-        for (int i = 0; i < 8; i++){
-            System.out.println(clackPool[i]);
-        }
+            try {
+                thump = AudioSystem.getClip();
+                File file = new File("sounds/thump.wav");
+                AudioInputStream audio = AudioSystem.getAudioInputStream(file);
+                thump.open(audio);
+            }
+            catch(Exception e){
+                System.out.println("Error reading thump");
+            }
         //FloatControl volume = (FloatControl) clips.get("explosion").getControl(FloatControl.Type.MASTER_GAIN);
         //volume.setValue(6.0f);
     }
@@ -49,5 +56,14 @@ public class Sounds {
         clip.setFramePosition(0);
         clip.start();
         System.out.println((float) (relativeV/2500));
+    }
+    public void playThump(double percent){
+        float v = (float) Math.min(percent, 1.0f);
+        float loudness = (float) Math.max(Math.pow(v, 1.3), 0.0001f);
+        FloatControl gain = (FloatControl) thump.getControl(FloatControl.Type.MASTER_GAIN);
+        float dB = 20.0f * (float)Math.log10(loudness);
+        gain.setValue(dB);
+        thump.setFramePosition(0);
+        thump.start();
     }
 }

@@ -26,6 +26,7 @@ public class Collision {
     public int hashCode(){
         return b1.getID()*b2.getID();
     }
+
     //Handles the collision with vector math. Gives new velocities to both balls in the collision.
     //No parameters or return
     public void handle(){

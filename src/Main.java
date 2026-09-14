@@ -1,3 +1,5 @@
+//Chester Wang, January 2026. 8 Ball final project
+
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -7,12 +9,7 @@ import java.util.*;
 import java.awt.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-//problems
-//For very slight collisions the projection may not detect it, but the actual physics might, or the other way around
-//If the last of a colour's ball was scored by the opposite player in a legal shot, the colour doesn't change to black
-//As a whole, due to difficulty in testing, the rules/winning/coloured number system may have other bugs
-//The pocket "hit boxes" are such that some balls may appear to hover over the hole without scoring
-//Slow moving balls can appear to clip into walls/corners, though this doesn't noticeably impact physics
+
 public class Main extends JPanel implements MouseListener, KeyListener, Runnable, MouseMotionListener {
     public static JFrame frame;
     public static Sounds sounds;
@@ -23,8 +20,8 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public static Line initPath, cuePath, objectPath;
     public static int gameState = -1;
     //gameStates: 0: playing. -1: Title. -2.0: instructions. -2.1: instructions p2. -2.2: instrucitons p3. 1: win screen
-    public static int shotState = 1;
-    //shotStates: 0: hitting, 1: aiming, 2: cue moving forward, 3: cue strikes ball, 4: moving cue ball
+    public static int shotState;
+    //shotStates: -1: placing cue ball for break 0: hitting, 1: aiming, 2: cue moving forward, 3: cue strikes ball, 4: moving cue ball
     public static String turn;
     public static int startPull;
     public static long timer;
@@ -37,7 +34,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     public static HashMap <String, BufferedImage> images = new HashMap<String, BufferedImage> ();
     public static int cueImgW;
     public static int cueImgL;
-    public static boolean breaking, breakShot, calling;
+    public static boolean breaking, breakShot, calling, placing;
     public static boolean redHit, blueHit, blackHit;
     public static String firstHit, winState;
     public static int calledPocket, hitPocket;
@@ -70,6 +67,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         frame.add(panel);
         frame.setVisible(true);
         frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
     //Drawing stuff. Graphics parameter, no return
     public void paintComponent(Graphics g){
@@ -109,10 +107,12 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         firstHit = "none";
         winState = "none";
         breaking = true;
+        placing = false;
         calling = false;
         redHit = false;
         blueHit = false;
         blackHit = false;
+        shotState = -1;
         //ArrayList of IDs used to randomly place balls in the rack
         ArrayList<Integer> IDs = new ArrayList<>();
         for (int i = 2; i <= 14; i++){
@@ -141,6 +141,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         cueBall = new Ball (16, 942,359);
         balls.add(cueBall);
         cue = new Cue();
+        cue.setShow(false);
         //These lines represent the outline of the field. They are not drawn.
         lines.clear();
         lines.add(new Line(115, 69, 80, 32));
@@ -208,6 +209,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         g2d.translate(cue.getPullBack(), 0);
         if (shotState == 2){
             cue.striking();
+            //System.out.println("here");
         }
         g2d.drawImage(cueImg, -cueImgW / 2, -cueImgL / 2, null);
         //Draw lines
@@ -291,7 +293,6 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             else turn = "grey1";
         }
         else if (breakShot){//Breaking
-            breakShot = false;
             if (balls.size() < 16 && balls.contains(cueBall)) turn = "grey1";
             else turn = "grey2";
         }
@@ -312,6 +313,7 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             else if (!blueHit && turn.contains("2")) turn = "red1";
         }
         if (turn.contains("black")) calling = true;
+        breakShot = false;//can only be true for the very first shot, so set to false immediately after
         //Reset variables
         blueHit = false;
         redHit = false;
@@ -542,6 +544,16 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
     }
     @Override
     public void mouseDragged(MouseEvent e) {
+        //moving for break
+        if (SwingUtilities.isLeftMouseButton(e) && shotState == -1 && gameState == 0) {
+            placing = true;
+            int x = e.getX();
+            int y = e.getY();
+            if (x - offsetX <= 942) x = 942 + offsetX;
+            if (y - offsetY >= 634) y = 633 + offsetY;
+            if (y - offsetY <= 83) y = 84 + offsetY;
+            cueBall.setPosition(x - offsetX, y - offsetY);
+        }
         //aiming
         if (SwingUtilities.isLeftMouseButton(e) && shotState == 1)
             cue.calcAngle(cueBall, e.getX(), e.getY());
@@ -549,8 +561,10 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
         if (SwingUtilities.isRightMouseButton(e) && shotState == 1)
             cue.setPullBack(e.getY() - startPull);
         //moving ball around
-        if (SwingUtilities.isLeftMouseButton(e) && shotState == 4)
+        if (SwingUtilities.isLeftMouseButton(e) && shotState == 4) {
             cueBall.setPosition(e.getX() - offsetX, e.getY() - offsetY);
+            placing = true;
+        }
     }
 
     @Override
@@ -565,12 +579,14 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             else
                 cue.setPullBack(0);
         }
-        if (SwingUtilities.isLeftMouseButton(e) && shotState == 4){
+        if (SwingUtilities.isLeftMouseButton(e) && (shotState == 4 || shotState == -1) && placing){
             for (int i = 0; i < balls.size(); i++){
                 if (cueBall.squaredDistance(balls.get(i).getX(), balls.get(i).getY()) < 784 && balls.get(i).getID() != 16)
                     return;
             }
             shotState = 1;
+            placing = false;
+            Collections.sort(balls);//Sort balls for projection. Needs to be resorted since cue ball position changed
             cue.setShow(true);
         }
     }

@@ -30,7 +30,7 @@ public class Cue {
     }
     public void setPullBack(double pullBack){
         if (pullBack < 0) this.pullBack = 0;
-        else this.pullBack = Math.min(pullBack *0.5, 150);
+        else this.pullBack = Math.min(pullBack, maxPull);
         powerPercent = Math.min(1, pullBack / maxPull);
     }
     public double getPullBack(){

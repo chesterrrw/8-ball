@@ -17,7 +17,7 @@ public class Line {
         this.x2 = x2;
         this.y1 = y1;
         this.y2 = y2;
-        //Note how these are both unit vectors, so they automatically are given lengths 1
+        //  Note how these are both unit vectors, so they automatically are given lengths 1
         directionVector = new UnitVector((x2 - x1), (y2 - y1));
         normal = new UnitVector(directionVector.getY(), -directionVector.getX());
     }
@@ -39,7 +39,9 @@ public class Line {
     //Checks for and handles ball collision with line. Parameters: Ball b. Return: boolean (if collision occurred or not)
     public boolean collision (Ball b){
         //Use pointDistance to check if the ball touches the wall. Using 18 to ensure the collision is counted even for high speed balls
-        if (pointDistance (b.getX(), b.getY(), true) < 18){
+        if (pointDistance (b.getX(), b.getY(), true) < 18 ||
+                Math.pow(b.getX() - x1, 2) + Math.pow(b.getY() - y1, 2) < 196 ||
+                Math.pow(b.getX() - x2, 2) + Math.pow(b.getY() - y2, 2) < 196){
             //The ball must have moved at least one radius (14 pixels) from the last collision to this collision.
             //If not, no collision is counted.
             if (Math.sqrt(Math.pow((b.lastCollisionX - b.getX()), 2) + Math.pow((b.lastCollisionY - b.getY()), 2)) < 14){
@@ -50,10 +52,10 @@ public class Line {
             //If the distance is greater than the radius, this means the ball is moving slowly and the collision was
             // detected before the ball arrived at the wall. Walk the ball FORWARD. counter to prevent infinite loop
             // if actually the ball overshot significantly
-            while (pointDistance(b.getX(), b.getY(), false) > Ball.radius && counter < 1000){
-                b.changeX(b.getVelocity().getX() * 0.1 * Main.physicsFreq);
-                b.changeY(b.getVelocity().getY() * 0.1 * Main.physicsFreq);
-                normal = new UnitVector(directionVector.getY(), -directionVector.getX());
+            while (pointDistance(b.getX(), b.getY(), false) > Ball.radius && counter < 100){
+                b.changeX(Math.cos(b.getVelocity().getDirection()));
+                b.changeY(Math.sin(b.getVelocity().getDirection()));
+                //normal = new UnitVector(directionVector.getY(), -directionVector.getX());
                 //System.out.println("broke1");
                 counter++;
             }
@@ -61,9 +63,9 @@ public class Line {
             //Go slowly (0.02x speed) since the ball must be moving relatively quickly to have overshot
             //Use 12 as the threshold to allow for some buffer and prevent the ball from reversing all the way out
             while (pointDistance(b.getX(), b.getY(), true) < 12){
-                b.changeX(b.getVelocity().getX() * -0.02 * Main.physicsFreq);
-                b.changeY(b.getVelocity().getY() * -0.02 * Main.physicsFreq);
-                normal = new UnitVector(directionVector.getY(), -directionVector.getX());
+                b.changeX(-Math.cos(b.getVelocity().getDirection()));
+                b.changeY(-Math.sin(b.getVelocity().getDirection()));
+                //normal = new UnitVector(directionVector.getY(), -directionVector.getX());
                 //System.out.println("broke2");
             }
             double x = b.getX();

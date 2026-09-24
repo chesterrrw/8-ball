@@ -453,8 +453,30 @@ public class Main extends JPanel implements MouseListener, KeyListener, Runnable
             if (!ballCol) {
                 cuePath = null;
                 objectPath = null;
-                initPath = new Line((int) cueBall.getX(), (int) cueBall.getY(),
-                        (int) (cueBall.getX() + cue.getDirection().getX() * -500), (int) (cueBall.getY() + cue.getDirection().getY() * -500));
+                boolean col = false;
+                int endX = 0, endY = 0;
+                while (!col){
+                    ghostCueBall.changeX(cue.getDirection().getX() * -4.5);
+                    ghostCueBall.changeY(cue.getDirection().getY() * -4.5);
+                    if (ghostCueBall.getX() < 68 || ghostCueBall.getX() > 1236 || ghostCueBall.getY() < 68 || ghostCueBall.getY() > 654){
+                        endX = (int) ghostCueBall.getX();
+                        endY = (int) ghostCueBall.getY();
+                        break;
+                    }
+                    for (Line l : lines){
+                        if (l.collision(ghostCueBall)){
+                            endX = (int) ghostCueBall.getX();
+                            endY = (int) ghostCueBall.getY();
+                            col = true;
+                            break;
+                        }
+                    }
+                }
+                initPath = new Line((int) cueBall.getX(), (int) cueBall.getY(), endX, endY);
+                System.out.println(endX);
+                System.out.println(endY);
+                //initPath = new Line((int) cueBall.getX(), (int) cueBall.getY(),
+                        //(int) (cueBall.getX() + cue.getDirection().getX() * -500), (int) (cueBall.getY() + cue.getDirection().getY() * -500));
             }
         }
         if (shotState != 0) return;
